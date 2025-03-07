@@ -343,3 +343,46 @@ train_loss, train_acc, val_loss, val_acc = train_net(
 # Plot the training curve
 plot_training_curve(checkpoint_dir)
 #######################################End of training the model############################################
+
+#######################################Evaluating the model#################################################
+
+#evaluate func
+def evaluate(net, loader, criterion, use_cuda=True):
+
+    total_loss = 0.0
+    total_err = 0.0
+    total_epoch = 0
+    for i, data in enumerate(loader, 0):
+        inputs, labels = data
+
+        if use_cuda and torch.cuda.is_available():
+            inputs = inputs.cuda()
+            labels = labels.cuda()
+        
+        labels = labels.long()
+
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
+
+        predicted_classes = torch.argmax(outputs, dim=1)
+        corr = (predicted_classes != labels).sum().item()
+
+        total_err += corr
+        total_loss += loss.item()
+        total_epoch += len(labels)
+
+    err = float(total_err) / total_epoch
+    loss = float(total_loss) / (i + 1)
+
+    return err, loss
+
+#evaluate
+err, loss = evaluate(
+            net=model,
+            loader=test_loader,
+            criterion=nn.CrossEntropyLoss()
+            )
+
+print('Test Error: ', err)
+print('Test Loss: ', loss)
+print('Test accuracy: ', 1-err)

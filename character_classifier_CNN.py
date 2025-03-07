@@ -27,7 +27,7 @@ from main import *
 
 class CNN(nn.Module):
 
-    def __init__(self, kernel_sizes=[5, 5], conv_dim=[32,64],hidden_sizes=[120, 84], num_classes=26, dropout_rate=0.5, input_dim=28):
+    def __init__(self, kernel_sizes=[5, 5], conv_dim=[64,128],hidden_sizes=[120, 84], num_classes=26, dropout_rate=0.25, input_dim=28):
         super(CNN, self).__init__()
 
         #define convolutional layers and pooling layers
@@ -82,7 +82,7 @@ print(f"Using device: {device}")
 model = model.to(device)
 
 # Define hyperparameters
-batch_size = 32
+batch_size = 128
 learning_rate = 0.001
 num_epochs = 30
 checkpoint_dir = 'braille_cnn_checkpoints'
@@ -101,3 +101,17 @@ train_loss, train_acc, val_loss, val_acc = train_net(
 # Plot the training curve
 plot_training_curve(checkpoint_dir)
 #######################################End of training the model############################################
+
+#######################################Evaluate the model###################################################
+
+err, loss = evaluate(
+            net=model,
+            loader=test_loader,
+            criterion=nn.CrossEntropyLoss()
+            )
+
+print('Test Error: ', err)
+print('Test Loss: ', loss)
+print('Test accuracy: ', 1-err)
+
+#######################################End of Evaluate the model###################################################

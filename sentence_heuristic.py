@@ -1,6 +1,3 @@
-import nltk
-from nltk.corpus import words
-
 from english_dictionary_loader import load_dictionary
 
 # Download the word list if not already downloaded
@@ -98,7 +95,7 @@ import random
 numSentences = 100
 sentences = []
 for i in range(numSentences):
-    sentence_length = random.randint(2, 20)
+    sentence_length = random.randint(2, 5)
     random_words = random.sample(list(dictionary), sentence_length)
 
     sentence = " ".join(random_words)
@@ -111,17 +108,31 @@ for i in range(numSentences):
 #ex. if sentence is "hello there" concat_sentence is "hellothere"
 #will use this to test accuracy of our baseline heuristic segment_sentence
 
-accuracy = 0
+def heuristic_accuracy(numSentences=100, useless_parameter=80):
 
-for i in range(numSentences):
-    segmented_sentence = segment_sentence_moderate(sentences[i][1])
-    if segmented_sentence == sentences[i][0]:
-        accuracy = accuracy + 1
-        #print(segmented_sentence + ":::::" + sentences[i][0])
-    else:
-        print(segmented_sentence + ":::::" + sentences[i][0])
+    accuracy = 0
 
-accuracy = float(accuracy / numSentences)
+    for i in range(numSentences):
 
-print(accuracy)
+        if random.randint(0,100) <= useless_parameter:
+            segmented_sentence = segment_sentence(sentences[i][1])
+        else:
+            segmented_sentence = segment_sentence_mid_bad(sentences[i][1])
 
+        print("input is " + sentences[i][1])
+        print("output is " + segmented_sentence)
+
+        if segmented_sentence == sentences[i][0]:
+            accuracy = accuracy + 1
+            print("Heuristic is correct!")
+        else:
+            print("Heuristic is wrong!")
+
+        print(" ")
+
+    accuracy = float(accuracy / numSentences)
+    print("accuracy is " + str(accuracy))
+
+    return accuracy
+
+heuristic_accuracy(numSentences=5)

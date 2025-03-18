@@ -21,7 +21,7 @@ from torchvision import transforms, datasets
 import os
 import shutil
 
-from main import *
+from models import *
 
 #######################################CNN LeNet Model############################################
 

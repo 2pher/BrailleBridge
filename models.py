@@ -467,62 +467,62 @@ def evaluate(net, loader, criterion, use_cuda=True):
 
 #######################################Transfer Learning with ResNet############################################
 
-def create_resnet_model(num_classes):
-    # Load pretrained ResNet18
-    resnet = torchvision.models.resnet18(pretrained=True)
+# def create_resnet_model(num_classes):
+#     # Load pretrained ResNet18
+#     resnet = torchvision.models.resnet18(pretrained=True)
     
-    # Modify the first layer to work with smaller images
-    resnet.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+#     # Modify the first layer to work with smaller images
+#     resnet.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
     
-    # Remove max pooling to preserve spatial dimensions for small images
-    resnet.maxpool = nn.Identity()
+#     # Remove max pooling to preserve spatial dimensions for small images
+#     resnet.maxpool = nn.Identity()
     
-    # Freeze early layers (optional - you can experiment with freezing different amounts)
-    for param in list(resnet.parameters())[:-2*4]:  # Unfreeze only the last 2 layers
-        param.requires_grad = False
+#     # Freeze early layers (optional - you can experiment with freezing different amounts)
+#     for param in list(resnet.parameters())[:-2*4]:  # Unfreeze only the last 2 layers
+#         param.requires_grad = False
     
-    # Replace the final fully connected layer
-    resnet.fc = nn.Linear(resnet.fc.in_features, num_classes)
+#     # Replace the final fully connected layer
+#     resnet.fc = nn.Linear(resnet.fc.in_features, num_classes)
     
-    return resnet
+#     return resnet
 
-# Define transformations for ResNet (similar to AlexNet)
-transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+# # Define transformations for ResNet (similar to AlexNet)
+# transform = transforms.Compose([
+#     transforms.Resize(256),
+#     transforms.CenterCrop(224),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+# ])
 
-dataset = datasets.ImageFolder(root=dataset_path, transform=transform)
+# dataset = datasets.ImageFolder(root=dataset_path, transform=transform)
 
-train_loader = DataLoader(dataset, batch_size=32, sampler=train_sampler)
-val_loader = DataLoader(dataset, batch_size=32, sampler=val_sampler)
-test_loader = DataLoader(dataset, batch_size=32, sampler=test_sampler)
+# train_loader = DataLoader(dataset, batch_size=32, sampler=train_sampler)
+# val_loader = DataLoader(dataset, batch_size=32, sampler=val_sampler)
+# test_loader = DataLoader(dataset, batch_size=32, sampler=test_sampler)
 
-# Create the ResNet model
-num_classes = len(dataset.classes)  # Should be 26 for braille letters
-model = create_resnet_model(num_classes)
-model = model.to(device)
+# # Create the ResNet model
+# num_classes = len(dataset.classes)  # Should be 26 for braille letters
+# model = create_resnet_model(num_classes)
+# model = model.to(device)
 
-train_loss, train_acc, val_loss, val_acc = train_net(
-    net=model,
-    train_loader=train_loader,
-    val_loader=val_loader,
-    batch_size=32,
-    learning_rate=0.001,  # You might want to use a smaller learning rate like 0.0001
-    num_epochs=20,
-    checkpoint_dir='braille_resnet_checkpoints'
-)
+# train_loss, train_acc, val_loss, val_acc = train_net(
+#     net=model,
+#     train_loader=train_loader,
+#     val_loader=val_loader,
+#     batch_size=32,
+#     learning_rate=0.001,  # You might want to use a smaller learning rate like 0.0001
+#     num_epochs=20,
+#     checkpoint_dir='braille_resnet_checkpoints'
+# )
 
-err, loss = evaluate(
-    net=model,
-    loader=test_loader,
-    criterion=nn.CrossEntropyLoss()
-)
+# err, loss = evaluate(
+#     net=model,
+#     loader=test_loader,
+#     criterion=nn.CrossEntropyLoss()
+# )
 
-print('Test Error: ', err)
-print('Test Loss: ', loss)
-print('Test accuracy: ', 1-err)
+# print('Test Error: ', err)
+# print('Test Loss: ', loss)
+# print('Test accuracy: ', 1-err)
 
 #######################################End of Transfer Learning with ResNet############################################

@@ -23,6 +23,8 @@ import shutil
 
 from models import *
 
+print("In character_classifier_CNN.py\n")
+
 #######################################CNN LeNet Model############################################
 
 class CNN(nn.Module):
@@ -31,7 +33,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
 
         #define convolutional layers and pooling layers
-        self.conv1 = nn.Conv2d(3, conv_dim[0], kernel_sizes[0])
+        self.conv1 = nn.Conv2d(3, conv_dim[0], kernel_sizes[0]) # Change input channels to 1 from 3 for grayscale images
         self.conv2 = nn.Conv2d(conv_dim[0], conv_dim[1], kernel_sizes[1])
         self.pool = nn.MaxPool2d(2, 2)
 
@@ -53,8 +55,11 @@ class CNN(nn.Module):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
 
-        #flatten into linear layers
-        x = x.view(-1, self.conv_output * self.size * self.size)
+        # #flatten into linear layers
+        # x = x.view(-1, self.conv_output * self.size * self.size)
+
+        x = x.view(x.size(0), -1)  # Better than using -1 explicitly
+
 
         #linear layers and dropout
         x = F.relu(self.fc1(x))
@@ -72,24 +77,24 @@ class CNN(nn.Module):
 #######################################Training the model############################################
 # Instantiate the model - make sure to use the correct number of classes
 num_classes = len(dataset.classes)  # This should be 26 for a-z
-model = CNN()
+model_2 = CNN()
 
 # Check if GPU is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Move model to device
-model = model.to(device)
+model_2 = model_2.to(device)
 
 # Define hyperparameters
 batch_size = 128
 learning_rate = 0.001
-num_epochs = 30
+num_epochs = 10
 checkpoint_dir = 'braille_cnn_checkpoints'
 
-# Train the model
+# Train the model_2
 train_loss, train_acc, val_loss, val_acc = train_net(
-    net=model,
+    net=model_2,
     train_loader=train_loader,
     val_loader=val_loader,
     batch_size=batch_size,
@@ -105,7 +110,7 @@ plot_training_curve(checkpoint_dir)
 #######################################Evaluate the model###################################################
 
 err, loss = evaluate(
-            net=model,
+            net=model_2,
             loader=test_loader,
             criterion=nn.CrossEntropyLoss()
             )
@@ -115,3 +120,11 @@ print('Test Loss: ', loss)
 print('Test accuracy: ', 1-err)
 
 #######################################End of Evaluate the model###################################################
+
+#######################################Save the model###################################################
+
+# Save the model
+torch.save(model_2.state_dict(), 'braille_cnn_model.pth')
+print("Model saved as braille_cnn_model.pth")
+
+###############################################End of Save the model###################################################

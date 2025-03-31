@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+import shutil
 from pathlib import Path
 from sklearn.cluster import KMeans
 from scipy.cluster.hierarchy import dendrogram, linkage
@@ -30,13 +31,29 @@ def get_dots(image):
     _, image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     # Morphological operations to remove noise
-    kernel = np.ones((3, 3), np.uint8)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    smaller_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    image = cv2.morphologyEx(
+        image, cv2.MORPH_DILATE, kernel
+    )  # Eliminate surrounding borders if any
+    image = cv2.morphologyEx(
+        image, cv2.MORPH_DILATE, kernel
+    )  # Eliminate surrounding borders if any
+    image = cv2.morphologyEx(
+        image, cv2.MORPH_DILATE, smaller_kernel
+    )  # Eliminate surrounding borders if any
+    image = cv2.morphologyEx(
+        image, cv2.MORPH_ERODE, kernel
+    )  # Eliminate surrounding borders if any
+    image = cv2.morphologyEx(
+        image, cv2.MORPH_ERODE, kernel
+    )  # Eliminate surrounding borders if any
+    image = cv2.morphologyEx(
+        image, cv2.MORPH_ERODE, kernel
+    )  # Eliminate surrounding borders if any
     image = cv2.morphologyEx(
         image, cv2.MORPH_OPEN, kernel
     )  # Eliminate surrounding borders if any
-    image = cv2.morphologyEx(
-        image, cv2.MORPH_CLOSE, kernel
-    )  # Second time for more robustness
     cv2.imwrite("braille_visualization/thresholded_image.jpg", image)
 
     # Connected Component Analysis
@@ -61,7 +78,7 @@ def get_dots(image):
             perimeter = cv2.arcLength(contours[0], True)
             circularity = (4 * np.pi * area) / (perimeter**2) if perimeter > 0 else 0
 
-            if circularity > 0.4:  # Consider only circular shapes
+            if circularity > 0.7:  # Consider only circular shapes
                 all_dots.append(
                     {
                         "id": i,
@@ -609,6 +626,10 @@ def preprocessing(
                     image_path: Path to input image
                     output_dir: Path for output visualizations
     """
+
+    # Clear ./Sequence directory
+    clear_sequence()
+
     # Create output directory
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -711,8 +732,11 @@ def preprocessing(
     cropped_cells = crop_cells(image, cells, dots)
 
 
-"""MAIN FUNCTION"""
-preprocessing()
+def clear_sequence(folder_path="./Sequence"):
+    folder = Path(folder_path)
+    if folder.exists() and folder.is_dir():
+        for file in folder.iterdir():
+            file.unlink()  # Remove file
 
 
 class LoadProcessedImages(Dataset):
@@ -733,10 +757,16 @@ class LoadProcessedImages(Dataset):
         return image, label
 
 
+"""""" """""" """""" """""" """""" """""" """""" """""" """""" """""" """"""
+preprocessing("./Test Images/test2.jpg")
 dataset = LoadProcessedImages("./Sequence")
 data_loader = DataLoader(dataset)
 
 print("\nLoading Data Loader...")
 
+full_string = ""  # Initialize an empty string
 for _, labels in data_loader:
-    print(labels)
+    full_string += "".join(labels)
+
+print(full_string)
+"""""" """""" """""" """""" """""" """""" """""" """""" """""" """""" """"""

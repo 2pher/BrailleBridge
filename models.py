@@ -21,6 +21,10 @@ from torchvision import transforms, datasets
 import os
 import shutil
 
+# Check if GPU is available
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+
 # #######################################Organizing the dataset############################################
 # Get the absolute path to the script's directory (where this file is located on local disk)
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -59,61 +63,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # print("Files have been organized successfully.")
 
 # #######################################End of organizing the dataset############################################
-
-#######################################Loading the dataset############################################
-
-# Define transformations for grayscale images
-transform = transforms.Compose([
-    transforms.Resize((28, 28)),  # Original size
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))  # For grayscale images
-])
-
-# Set the path to your organized dataset
-dataset_path = os.path.join(script_dir, 'Braille Dataset')
-
-# Load dataset using ImageFolder
-dataset = datasets.ImageFolder(root=dataset_path, transform=transform)
-
-# Get class names
-classes = dataset.classes
-print(f"Classes: {classes}")
-print(f"Number of images: {len(dataset)}")
-
-# Get all indices
-indices = list(range(len(dataset)))
-
-# Shuffle indices
-np.random.seed(1000)
-np.random.shuffle(indices)
-
-# Split indices into training, validation, and test sets
-train_split = int(0.7 * len(indices))  # 70% training
-val_split = int(0.85 * len(indices))  # 15% validation
-train_indices, val_indices, test_indices = indices[:train_split], indices[train_split:val_split], indices[val_split:]
-
-# Create samplers
-train_sampler = SubsetRandomSampler(train_indices)
-val_sampler = SubsetRandomSampler(val_indices)
-test_sampler = SubsetRandomSampler(test_indices)
-
-# Create data loaders
-train_loader = DataLoader(dataset, batch_size=32, sampler=train_sampler)
-val_loader = DataLoader(dataset, batch_size=32, sampler=val_sampler)
-test_loader = DataLoader(dataset, batch_size=32, sampler=test_sampler)
-
-# Print the number of images in each set
-print(f"Training images: {len(train_indices)}")
-print(f"Validation images: {len(val_indices)}")
-print(f"Test images: {len(test_indices)}")
-
-# Verify a batch from the training loader
-dataiter = iter(train_loader)
-images, labels = next(dataiter)
-print(f"Batch shape: {images.shape}")
-print(f"Labels: {labels}")
-
-#######################################End of loading the dataset############################################
 
 
 #######################################Simple ANN Model############################################
@@ -210,17 +159,6 @@ def plot_training_curve(checkpoint_dir):
 #######################################End of plotting the training curve############################################
 
 #######################################Training the model############################################
-# Instantiate the model - make sure to use the correct number of classes
-num_classes = len(dataset.classes)  # This should be 26 for a-z
-model = SimpleANN(input_size=3*28*28, num_classes=num_classes)
-
-# Check if GPU is available
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
-
-
-# Move model to device
-model = model.to(device)
 
 def train_net(net, train_loader, val_loader, batch_size=64, learning_rate=0.001, num_epochs=30, checkpoint_dir='checkpoints'):
     # Create checkpoint directory
@@ -526,3 +464,65 @@ def evaluate(net, loader, criterion, use_cuda=True):
 # print('Test accuracy: ', 1-err)
 
 #######################################End of Transfer Learning with ResNet############################################
+
+#######################################Loading the dataset############################################
+# Define transformations for grayscale images
+transform = transforms.Compose([
+    transforms.Resize((28, 28)),  # Original size
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))  # For grayscale images
+])
+
+# Set the path to your organized dataset
+dataset_path = os.path.join(script_dir, 'Braille Dataset')
+
+# Load dataset using ImageFolder
+dataset = datasets.ImageFolder(root=dataset_path, transform=transform)
+
+# Get class names
+classes = dataset.classes
+print(f"Classes: {classes}")
+print(f"Number of images: {len(dataset)}")
+
+# Get all indices
+indices = list(range(len(dataset)))
+
+# Shuffle indices
+np.random.seed(1000)
+np.random.shuffle(indices)
+
+# Split indices into training, validation, and test sets
+train_split = int(0.7 * len(indices))  # 70% training
+val_split = int(0.85 * len(indices))  # 15% validation
+train_indices, val_indices, test_indices = indices[:train_split], indices[train_split:val_split], indices[val_split:]
+
+# Create samplers
+train_sampler = SubsetRandomSampler(train_indices)
+val_sampler = SubsetRandomSampler(val_indices)
+test_sampler = SubsetRandomSampler(test_indices)
+
+# Create data loaders
+train_loader = DataLoader(dataset, batch_size=32, sampler=train_sampler)
+val_loader = DataLoader(dataset, batch_size=32, sampler=val_sampler)
+test_loader = DataLoader(dataset, batch_size=32, sampler=test_sampler)
+
+# Print the number of images in each set
+print(f"Training images: {len(train_indices)}")
+print(f"Validation images: {len(val_indices)}")
+print(f"Test images: {len(test_indices)}")
+
+# Verify a batch from the training loader
+dataiter = iter(train_loader)
+images, labels = next(dataiter)
+print(f"Batch shape: {images.shape}")
+print(f"Labels: {labels}")
+
+#######################################End of loading the dataset############################################
+
+if __name__ == "__main__":
+    # Instantiate the model - make sure to use the correct number of classes
+    num_classes = len(dataset.classes)  # This should be 26 for a-z
+    model = SimpleANN(input_size=3*28*28, num_classes=num_classes)
+
+    # Move model to device
+    model = model.to(device)

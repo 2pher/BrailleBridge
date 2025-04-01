@@ -135,4 +135,7 @@ def heuristic_accuracy(numSentences=100, useless_parameter=80):
 
     return accuracy
 
-heuristic_accuracy(numSentences=5)
+if __name__ == "__main__":
+    # Test the heuristic accuracy with a specified number of sentences
+    heuristic_accuracy(numSentences=5)
+    

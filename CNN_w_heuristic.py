@@ -28,51 +28,53 @@ import shutil
 from character_classifier_CNN import CNN
 from sentence_heuristic import segment_sentence
 
-# load the model
-model = CNN()
-model.load_state_dict(torch.load('braille_cnn_model.pth'))
-model.eval()
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model.to(device)
 
-# Define the transformation for the input image
-transform = transforms.Compose([
-    transforms.Resize((28, 28)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # For 3 channels
-])
+if __name__ == "__main__":
+    # load the model
+    model = CNN()
+    model.load_state_dict(torch.load('braille_cnn_model.pth'))
+    model.eval()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
 
-# Alphabet mapping
-alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    # Define the transformation for the input image
+    transform = transforms.Compose([
+        transforms.Resize((28, 28)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # For 3 channels
+    ])
 
-# Get all image files from the directory
-image_dir = 'segmented_braille_images'
-image_files = [f for f in os.listdir(image_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    # Alphabet mapping
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
 
-# Process all images and collect predictions
-predictions = []
-for image_file in image_files:
-    try:
-        # Load and transform image
-        image_path = os.path.join(image_dir, image_file)
-        image = Image.open(image_path)
-        image_tensor = transform(image).unsqueeze(0).to(device)
-        
-        # Get prediction
-        with torch.no_grad():
-            output = model(image_tensor)
-            prediction = torch.argmax(output, dim=1).item()
-        
-        # Map to letter
-        predicted_letter = alphabet[prediction]
-        predictions.append(predicted_letter)
-        
-        print(f"Processed {image_file}: Predicted '{predicted_letter}'")
-        
-    except Exception as e:
-        print(f"Error processing {image_file}: {str(e)}")
+    # Get all image files from the directory
+    image_dir = 'Sequence'
+    image_files = [f for f in os.listdir(image_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-final_output = ''.join(predictions)
-print(f"\nFinal concatenated prediction: {final_output}")
+    # Process all images and collect predictions
+    predictions = []
+    for image_file in image_files:
+        try:
+            # Load and transform image
+            image_path = os.path.join(image_dir, image_file)
+            image = Image.open(image_path)
+            image_tensor = transform(image).unsqueeze(0).to(device)
+            
+            # Get prediction
+            with torch.no_grad():
+                output = model(image_tensor)
+                prediction = torch.argmax(output, dim=1).item()
+            
+            # Map to letter
+            predicted_letter = alphabet[prediction]
+            predictions.append(predicted_letter)
+            
+            print(f"Processed {image_file}: Predicted '{predicted_letter}'")
+            
+        except Exception as e:
+            print(f"Error processing {image_file}: {str(e)}")
 
-print(f"Segmented output: {segment_sentence(final_output)}")
+    final_output = ''.join(predictions)
+    print(f"\nFinal concatenated prediction: {final_output}")
+
+    print(f"Segmented output: {segment_sentence(final_output)}")

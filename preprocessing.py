@@ -758,15 +758,16 @@ class LoadProcessedImages(Dataset):
 
 
 """""" """""" """""" """""" """""" """""" """""" """""" """""" """""" """"""
-preprocessing("./Test Images/test2.jpg")
-dataset = LoadProcessedImages("./Sequence")
-data_loader = DataLoader(dataset)
+if __name__ == "__main__":
+    preprocessing("./Test Images/test2.jpg")
+    dataset = LoadProcessedImages("./Sequence")
+    data_loader = DataLoader(dataset)
 
-print("\nLoading Data Loader...")
+    print("\nLoading Data Loader...")
 
-full_string = ""  # Initialize an empty string
-for _, labels in data_loader:
-    full_string += "".join(labels)
+    full_string = ""  # Initialize an empty string
+    for _, labels in data_loader:
+        full_string += "".join(labels)
 
-print(full_string)
-"""""" """""" """""" """""" """""" """""" """""" """""" """""" """""" """"""
+    print(full_string)
+    """""" """""" """""" """""" """""" """""" """""" """""" """""" """""" """"""

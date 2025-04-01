@@ -22,8 +22,9 @@ import os
 import shutil
 
 from models import *
+from models import dataset
 
-print("In character_classifier_CNN.py\n")
+#  print("In character_classifier_CNN.py\n")
 
 #######################################CNN LeNet Model############################################
 
@@ -74,57 +75,58 @@ class CNN(nn.Module):
 
 #######################################End of CNN LeNet Model############################################
 
-#######################################Training the model############################################
-# Instantiate the model - make sure to use the correct number of classes
-num_classes = len(dataset.classes)  # This should be 26 for a-z
-model_2 = CNN()
+if __name__ == "__main__":
+    #######################################Training the model############################################
+    # Instantiate the model - make sure to use the correct number of classes
+    num_classes = len(dataset.classes)  # This should be 26 for a-z
+    model_2 = CNN()
 
-# Check if GPU is available
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
+    # # Check if GPU is available
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # print(f"Using device: {device}")
 
-# Move model to device
-model_2 = model_2.to(device)
+    # Move model to device
+    model_2 = model_2.to(device)
 
-# Define hyperparameters
-batch_size = 128
-learning_rate = 0.001
-num_epochs = 10
-checkpoint_dir = 'braille_cnn_checkpoints'
+    # Define hyperparameters
+    batch_size = 128
+    learning_rate = 0.001
+    num_epochs = 50
+    checkpoint_dir = 'braille_cnn_checkpoints'
 
-# Train the model_2
-train_loss, train_acc, val_loss, val_acc = train_net(
-    net=model_2,
-    train_loader=train_loader,
-    val_loader=val_loader,
-    batch_size=batch_size,
-    learning_rate=learning_rate,
-    num_epochs=num_epochs,
-    checkpoint_dir=checkpoint_dir
-)
+    # Train the model_2
+    train_loss, train_acc, val_loss, val_acc = train_net(
+        net=model_2,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        batch_size=batch_size,
+        learning_rate=learning_rate,
+        num_epochs=num_epochs,
+        checkpoint_dir=checkpoint_dir
+    )
 
-# Plot the training curve
-plot_training_curve(checkpoint_dir)
-#######################################End of training the model############################################
+    # Plot the training curve
+    plot_training_curve(checkpoint_dir)
+    #######################################End of training the model############################################
 
-#######################################Evaluate the model###################################################
+    #######################################Evaluate the model###################################################
 
-err, loss = evaluate(
-            net=model_2,
-            loader=test_loader,
-            criterion=nn.CrossEntropyLoss()
-            )
+    err, loss = evaluate(
+                net=model_2,
+                loader=test_loader,
+                criterion=nn.CrossEntropyLoss()
+                )
 
-print('Test Error: ', err)
-print('Test Loss: ', loss)
-print('Test accuracy: ', 1-err)
+    print('Test Error: ', err)
+    print('Test Loss: ', loss)
+    print('Test accuracy: ', 1-err)
 
-#######################################End of Evaluate the model###################################################
+    #######################################End of Evaluate the model###################################################
 
-#######################################Save the model###################################################
+    #######################################Save the model###################################################
 
-# Save the model
-torch.save(model_2.state_dict(), 'braille_cnn_model.pth')
-print("Model saved as braille_cnn_model.pth")
+    # Save the model
+    torch.save(model_2.state_dict(), 'braille_cnn_model.pth')
+    print("Model saved as braille_cnn_model.pth")
 
-###############################################End of Save the model###################################################
+    ###############################################End of Save the model###################################################

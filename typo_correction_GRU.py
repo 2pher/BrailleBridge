@@ -107,6 +107,7 @@ class GRU(nn.Module):
         self.fc = nn.Linear(hidden_size * 2, vocab_size)
 
     def forward(self, x, hidden=None):
+
         x = self.ident[x]
         output, hidden = self.gru(x, hidden)
 
@@ -254,4 +255,50 @@ def main():
         print(f"Input: {example_input} | Predicted: {predicted_word}")
 
 if __name__ == "__main__":
-    main()
+    # load the model
+    model = GRU(name="GRU", hidden_size=256, vocab_size=27, n_layers=3, dropout=0.3)
+    checkpoint = torch.load('gru_checkpoints/model_epoch_30.pth')
+    model.load_state_dict(checkpoint['model_state_dict'])
+    model.eval()
+    
+    # example input sentence
+    example_input = "bai s a sheept hat sleeps all day"
+    # example_input = "Mathematiks"
+    
+    # Split the sentence into words
+    words = example_input.split()
+    
+    # Process each word and collect the results
+    corrected_words = []
+    
+    for word in words:
+        # Convert word to sequence
+        word_seq = word_to_seq(word)
+        word_tensor = torch.tensor(word_seq).unsqueeze(0).to("cpu")
+        
+        # Get prediction
+        with torch.no_grad():
+            output = model(word_tensor)
+            # Handle the dimensionality properly, ensuring we have an array
+            predicted_seq = torch.argmax(output, dim=-1).squeeze().cpu().numpy()
+            
+            # Convert back to string (letter)
+            if predicted_seq.ndim == 0:  # Check if it's a scalar (0-d array)
+                # Handle single character case
+                if predicted_seq > 0:
+                    predicted_word = chr(predicted_seq + 96)
+                else:
+                    predicted_word = ""
+            else:
+                # Handle multi-character case
+                predicted_word = ''.join([chr(i + 96) for i in predicted_seq if i > 0])
+                
+            corrected_words.append(predicted_word)
+            
+    # Join the corrected words back into a sentence
+    corrected_sentence = ' '.join(corrected_words)
+    
+    print(f"Input: {example_input}")
+    print(f"Corrected: {corrected_sentence}")
+
+

@@ -5,6 +5,7 @@ import torch.optim as optim
 import os
 import matplotlib.pyplot as plt
 import random
+import time
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.nn.utils.rnn import pad_sequence
 from models import plot_training_curve
@@ -93,21 +94,25 @@ def load_dataset(word_list, train_ratio=0.6, val_ratio=0.2, batch_size=50):
 ##########################GRU model########################################
 
 class GRU(nn.Module):
-    def __init__(self, name, hidden_size, vocab_size, n_layers=1):
+    def __init__(self, name, hidden_size, vocab_size, n_layers=1, dropout=0.0):
         super(GRU, self).__init__()
         self.name = name
         self.hidden_size = hidden_size
         self.vocab_size = vocab_size
         self.n_layers = n_layers
+        self.dropout = nn.Dropout(dropout)
 
         self.ident = torch.eye(vocab_size)
         self.gru = nn.GRU(vocab_size, hidden_size, num_layers=n_layers, batch_first=True, bidirectional=True)
         self.fc = nn.Linear(hidden_size * 2, vocab_size)
 
     def forward(self, x, hidden=None):
-        x = self.ident[x]  # One-hot encoding
+        x = self.ident[x]
         output, hidden = self.gru(x, hidden)
+
         output = self.fc(output)
+        output = self.dropout(output)
+
         return output
 
 
@@ -151,6 +156,9 @@ def train_model(model, train_loader, val_loader, num_epochs, learning_rate, devi
     train_acc = np.zeros(num_epochs)
     val_loss = np.zeros(num_epochs)
     val_acc = np.zeros(num_epochs)
+
+    start_time = time.time()
+    print("Training started...")
 
     for epoch in range(num_epochs):
 
@@ -198,6 +206,10 @@ def train_model(model, train_loader, val_loader, num_epochs, learning_rate, devi
         print(f"Epoch [{epoch+1}/{num_epochs}] | Train Loss: {avg_train_loss:.4f}, Train Acc: {train_accuracy:.4f} | Val Loss: {avg_val_loss:.4f}, Val Acc: {val_accuracy:.4f}")
     print("Training complete!")
 
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time:.2f} seconds")
+
     #save models
     model_path = os.path.join(checkpoint_dir, "final_model.pth")
     torch.save(model.state_dict(), model_path)
@@ -212,14 +224,14 @@ def train_model(model, train_loader, val_loader, num_epochs, learning_rate, devi
 ############################ train and save gru ###################################
 
 def main():
-    word_list = get_random_words("words.txt", 1000)  # Adjust the number of words as needed
+    word_list = get_random_words("words.txt", 50000)  # Adjust the number of words as needed
 
     train_loader, val_loader, test_loader = load_dataset(word_list, batch_size=50)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = GRU(name="GRU", hidden_size=128, vocab_size=27, n_layers=2)
-    train_model(model, train_loader, val_loader, num_epochs=10, learning_rate=0.001, device=device, checkpoint_dir="gru_checkpoints")
+    model = GRU(name="GRU", hidden_size=256, vocab_size=27, n_layers=3, dropout=0.3)
+    train_model(model, train_loader, val_loader, num_epochs=30, learning_rate=0.0005, device=device, checkpoint_dir="gru_checkpoints")
 
     test_loss, test_accuracy = evaluate_model(model, test_loader, nn.CrossEntropyLoss(ignore_index=0), device)
     print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}")

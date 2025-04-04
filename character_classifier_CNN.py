@@ -84,29 +84,31 @@ if __name__ == "__main__":
     model = CNN()
     model.load_state_dict(torch.load('braille_cnn_model.pth', map_location=torch.device('cpu')))
     model.eval()
-    # # Check if GPU is available
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # print(f"Using device: {device}")
+    # Check if GPU is available
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    model = model.to(device)
 
     # Define hyperparameters
     batch_size = 128
     learning_rate = 0.001
-    num_epochs = 50
+    num_epochs = 70
     checkpoint_dir = 'braille_cnn_checkpoints'
 
-    # Train the model_2
-    """ train_loss, train_acc, val_loss, val_acc = train_net(
-        net=model_2,
-        train_loader=train_loader,
-        val_loader=val_loader,
-        batch_size=batch_size,
-        learning_rate=learning_rate,
-        num_epochs=num_epochs,
-        checkpoint_dir=checkpoint_dir
-    ) """
+    # # Train the model_2
+    # train_loss, train_acc, val_loss, val_acc = train_net(
+    #     net=model,
+    #     train_loader=train_loader,
+    #     val_loader=val_loader,
+    #     batch_size=batch_size,
+    #     learning_rate=learning_rate,
+    #     num_epochs=num_epochs,
+    #     checkpoint_dir=checkpoint_dir
+    # )
 
-    # Plot the training curve
-    #plot_training_curve(checkpoint_dir)
+    # # Plot the training curve
+    # plot_training_curve(checkpoint_dir)
     #######################################End of training the model############################################
 
     #######################################Evaluate the model###################################################
@@ -156,9 +158,9 @@ if __name__ == "__main__":
 
     #######################################Save the model###################################################
 
-    # Save the model
-    #torch.save(model_2.state_dict(), 'braille_cnn_model.pth')
-    #print("Model saved as braille_cnn_model.pth")
+    # # Save the model
+    # torch.save(model.state_dict(), 'braille_cnn_model.pth')
+    # print("Model saved as braille_cnn_model.pth")
 
     ###############################################End of Save the model###################################################
 

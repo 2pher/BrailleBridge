@@ -86,11 +86,11 @@ def preprocess_CNN_transformer(image_dir):
 
     # print(f"Segmented output with typos fixed: {fix_segmentation_errors(improved_segment_sentence(final_output))}")
 
-    # print(f"Segmented output with typos fixed: {fix_concatenated_text(final_output)}")
+    print(f"Segmented output with typos fixed: {fix_concatenated_text(final_output)}")
 
 if __name__ == "__main__":
     # preprocessing
-    image_dir = 'Test Images/test9.jpg'
+    image_dir = 'Test Images/test5.jpg'
     print("\n\nCalling the preprocess_CNN_transformer function...\n\n")
     preprocess_CNN_transformer(image_dir)
     

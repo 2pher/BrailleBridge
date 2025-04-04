@@ -22,7 +22,7 @@ def fix_concatenated_text(text):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0125",  
         messages=[
-            {"role": "system", "content": "I will give you a string with no spaces. The words in the concatenated string may also have typos. Could you put the spaces in the concatenated string and fix any typos? Only respond with the corrected text."},
+            {"role": "system", "content": "I will give you a string with no spaces. The words in the concatenated string may also have typos. Could you put the spaces in the concatenated string, fix any typos and make the sentence make sense? Only respond with the corrected text with reasonable meaning."},
             {"role": "user", "content": f"{text}"}
         ],
         temperature=1  # Lower temperature for more deterministic outputs

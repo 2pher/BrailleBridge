@@ -78,7 +78,7 @@ def get_dots(image):
             perimeter = cv2.arcLength(contours[0], True)
             circularity = (4 * np.pi * area) / (perimeter**2) if perimeter > 0 else 0
 
-            if circularity > 0.4:  # Consider only circular shapes
+            if circularity > 0.7:  # Consider only circular shapes
                 all_dots.append(
                     {
                         "id": i,

@@ -24,6 +24,9 @@ import shutil
 from models import *
 from models import dataset
 
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+
 #  print("In character_classifier_CNN.py\n")
 
 #######################################CNN LeNet Model############################################
@@ -78,15 +81,12 @@ class CNN(nn.Module):
 if __name__ == "__main__":
     #######################################Training the model############################################
     # Instantiate the model - make sure to use the correct number of classes
-    num_classes = len(dataset.classes)  # This should be 26 for a-z
-    model_2 = CNN()
-
+    model = CNN()
+    model.load_state_dict(torch.load('braille_cnn_model.pth', map_location=torch.device('cpu')))
+    model.eval()
     # # Check if GPU is available
     # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # print(f"Using device: {device}")
-
-    # Move model to device
-    model_2 = model_2.to(device)
 
     # Define hyperparameters
     batch_size = 128
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     checkpoint_dir = 'braille_cnn_checkpoints'
 
     # Train the model_2
-    train_loss, train_acc, val_loss, val_acc = train_net(
+    """ train_loss, train_acc, val_loss, val_acc = train_net(
         net=model_2,
         train_loader=train_loader,
         val_loader=val_loader,
@@ -103,16 +103,16 @@ if __name__ == "__main__":
         learning_rate=learning_rate,
         num_epochs=num_epochs,
         checkpoint_dir=checkpoint_dir
-    )
+    ) """
 
     # Plot the training curve
-    plot_training_curve(checkpoint_dir)
+    #plot_training_curve(checkpoint_dir)
     #######################################End of training the model############################################
 
     #######################################Evaluate the model###################################################
 
     err, loss = evaluate(
-                net=model_2,
+                net=model,
                 loader=test_loader,
                 criterion=nn.CrossEntropyLoss()
                 )
@@ -121,12 +121,47 @@ if __name__ == "__main__":
     print('Test Loss: ', loss)
     print('Test accuracy: ', 1-err)
 
+    all_labels = []
+    all_predictions = []
+
+    # Disable gradient computation for evaluation
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
+
+            outputs = model(images)
+            _, predicted = torch.max(outputs, 1)
+
+            all_labels.extend(labels.cpu().numpy())
+            all_predictions.extend(predicted.cpu().numpy())
+
+    # Convert to numpy arrays
+    all_labels = np.array(all_labels)
+    all_predictions = np.array(all_predictions)
+
+    # Compute the confusion matrix
+    class_labels = [chr(i) for i in range(97, 123)]
+    conf_matrix = confusion_matrix(all_labels, all_predictions)
+
+    # Plot the confusion matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=class_labels, yticklabels=class_labels)
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.title("Confusion Matrix")
+    plt.show()
+
+    print(classification_report(all_labels, all_predictions, target_names=class_labels))
     #######################################End of Evaluate the model###################################################
 
     #######################################Save the model###################################################
 
     # Save the model
-    torch.save(model_2.state_dict(), 'braille_cnn_model.pth')
-    print("Model saved as braille_cnn_model.pth")
+    #torch.save(model_2.state_dict(), 'braille_cnn_model.pth')
+    #print("Model saved as braille_cnn_model.pth")
 
     ###############################################End of Save the model###################################################
+
+#########################################Compute test accuracy and quantitative measyres######################
+
+

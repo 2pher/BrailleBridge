@@ -32,7 +32,7 @@ def get_dots(image):
 
     # Morphological operations to remove noise
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    smaller_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    smaller_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))
     image = cv2.morphologyEx(
         image, cv2.MORPH_DILATE, kernel
     )  # Eliminate surrounding borders if any
@@ -78,7 +78,7 @@ def get_dots(image):
             perimeter = cv2.arcLength(contours[0], True)
             circularity = (4 * np.pi * area) / (perimeter**2) if perimeter > 0 else 0
 
-            if circularity > 0.7:  # Consider only circular shapes
+            if circularity > 0.4:  # Consider only circular shapes
                 all_dots.append(
                     {
                         "id": i,
@@ -94,8 +94,8 @@ def get_dots(image):
     # Compute median width to filter out non-braille dots
     if widths:
         median_width = np.median(widths)
-        lower_bound = 0.9 * median_width
-        upper_bound = 1.1 * median_width
+        lower_bound = 0.8 * median_width
+        upper_bound = 1.2 * median_width
 
         filtered_dots = [
             dot for dot in all_dots if lower_bound <= dot["width"] <= upper_bound
@@ -759,7 +759,7 @@ class LoadProcessedImages(Dataset):
 
 """""" """""" """""" """""" """""" """""" """""" """""" """""" """""" """"""
 if __name__ == "__main__":
-    preprocessing("./Test Images/test2.jpg")
+    preprocessing("./Test Images/test5.jpg")
     dataset = LoadProcessedImages("./Sequence")
     data_loader = DataLoader(dataset)
 

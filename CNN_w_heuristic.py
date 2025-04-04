@@ -27,9 +27,14 @@ import shutil
 
 from character_classifier_CNN import CNN
 from sentence_heuristic import segment_sentence
+from sentence_heuristic import multi_chunk_segment
+from typo_correction_transformer import fix_segmentation_errors
+from typo_correction_transformer import fix_concatenated_text
+from preprocessing import preprocessing 
 
+def preprocess_CNN_transformer(image_dir):
+    preprocessing(image_dir)
 
-if __name__ == "__main__":
     # load the model
     model = CNN()
     model.load_state_dict(torch.load('braille_cnn_model.pth'))
@@ -77,4 +82,16 @@ if __name__ == "__main__":
     final_output = ''.join(predictions)
     print(f"\nFinal concatenated prediction: {final_output}")
 
-    print(f"Segmented output: {segment_sentence(final_output)}")
+    # print(f"Segmented output: {multi_chunk_segment(final_output)}")
+
+    # print(f"Segmented output with typos fixed: {fix_segmentation_errors(improved_segment_sentence(final_output))}")
+
+    # print(f"Segmented output with typos fixed: {fix_concatenated_text(final_output)}")
+
+if __name__ == "__main__":
+    # preprocessing
+    image_dir = 'Test Images/test9.jpg'
+    print("\n\nCalling the preprocess_CNN_transformer function...\n\n")
+    preprocess_CNN_transformer(image_dir)
+    
+
